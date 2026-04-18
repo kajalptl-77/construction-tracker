@@ -119,8 +119,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Register (Admin only)
-app.post('/api/auth/register', async (req, res) => {
-// app.post('/api/auth/register', authenticateToken, authorizeRole([101]), async (req, res) => {
+app.post('/api/auth/register', authenticateToken, authorizeRole([101]), async (req, res) => {
     try {
         const { name, email, mobile_no, password, role_code } = req.body;
 
@@ -155,13 +154,9 @@ app.post('/api/auth/register', async (req, res) => {
             return res.status(400).json({ error: 'Invalid role' });
         }
 
-        // const [result] = await connection.query(
-        //     'INSERT INTO users (name, email, mobile_no, password_hash, role_id, created_by) VALUES (?, ?, ?, ?, ?, ?)',
-        //     [name, email, mobile_no, passwordHash, roles[0].id, req.user.userId]
-        // );
         const [result] = await connection.query(
             'INSERT INTO users (name, email, mobile_no, password_hash, role_id, created_by) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, email, mobile_no, passwordHash, roles[0].id, 0]
+            [name, email, mobile_no, passwordHash, roles[0].id, req.user.userId]
         );
 
         // Log audit
