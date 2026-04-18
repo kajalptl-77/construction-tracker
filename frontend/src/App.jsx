@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-// import React, { useState, useEffect, useCallback } from 'react';
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
@@ -214,33 +213,21 @@ function UserManagement({ token, user }) {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // useEffect(() => {
-    //     loadUsers();
-    // }, []);
+    const loadUsers = useCallback(async () => {
+        try {
+            const data = await api.getUsers(token);
+            const filteredUsers = data.filter(u => u.role_code === 102);
+            setUsers(filteredUsers);
+            setLoading(false);
+        } catch (err) {
+            setError('Failed to load users');
+            setLoading(false);
+        }
+    }, [token]);
 
     useEffect(() => {
-    loadUsers();
-}, [loadUsers]);
-
-    // const loadUsers = async () => {
-    //     try {
-    //         const data = await api.getUsers(token);
-    //         // Filter to only show regular users (role_code 102)
-    //         const filteredUsers = data.filter(user => user.role_code === 102);
-    //         setUsers(filteredUsers);
-    //         setLoading(false);
-    //     } catch (err) {
-    //         setError('Failed to load users');
-    //         setLoading(false);
-    //     }
-    // };
-
-    const loadUsers = useCallback(async () => {
-    const data = await api.getUsers(token);
-    const filteredUsers = data.filter(u => u.role_code === 102);
-    setUsers(filteredUsers);
-    setLoading(false);
-}, [token]);
+        loadUsers();
+    }, [loadUsers]);
 
     const handleAddUser = async (e) => {
         e.preventDefault();
@@ -371,30 +358,20 @@ function Dashboard({ token, user }) {
     const [summary, setSummary] = useState([]);
     const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-    loadSummary();
-}, [loadSummary]);
-
-    // const loadSummary = async () => {
-    //     try {
-    //         const data = await api.getDashboardSummary(token);
-    //         setSummary(data);
-    //         setLoading(false);
-    //     } catch (err) {
-    //         console.error('Failed to load summary');
-    //         setLoading(false);
-    //     }
-    // };
-
     const loadSummary = useCallback(async () => {
-    try {
-        const data = await api.getDashboardSummary(token);
-        setSummary(data);
-        setLoading(false);
-    } catch (err) {
-        setLoading(false);
-    }
-}, [token]);
+        try {
+            const data = await api.getDashboardSummary(token);
+            setSummary(data);
+            setLoading(false);
+        } catch (err) {
+            console.error('Failed to load summary');
+            setLoading(false);
+        }
+    }, [token]);
+
+    useEffect(() => {
+        loadSummary();
+    }, [loadSummary]);
 
     const totalInward = summary.reduce((sum, s) => sum + parseFloat(s.total_inward || 0), 0);
     const totalOutward = summary.reduce((sum, s) => sum + parseFloat(s.total_outward || 0), 0);
@@ -465,46 +442,22 @@ function TransactionForm({ token, user, onSuccess }) {
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    // useEffect(() => {
-    //     if (formData.transaction_type) {
-    //         loadCategories(formData.transaction_type);
-    //     }
-    // }, [formData.transaction_type]);
-
-    useEffect(() => {
-    loadData();
-}, [loadData]);
-
-    // const loadData = async () => {
-    //     try {
-    //         const [sitesData, txData] = await Promise.all([
-    //             api.getSites(token),
-    //             api.getTransactions(token)
-    //         ]);
-    //         setSites(sitesData);
-    //         setTransactions(txData);
-    //         setLoading(false);
-    //     } catch (err) {
-    //         setError('Failed to load data');
-    //         setLoading(false);
-    //     }
-    // };
-
     const loadData = useCallback(async () => {
-    const [sitesData, txData] = await Promise.all([
-        api.getSites(token),
-        api.getTransactions(token)
-    ]);
-    setSites(sitesData);
-    setTransactions(txData);
-    setLoading(false);
-}, [token]);
+        try {
+            const [sitesData, txData] = await Promise.all([
+                api.getSites(token),
+                api.getTransactions(token)
+            ]);
+            setSites(sitesData);
+            setTransactions(txData);
+            setLoading(false);
+        } catch (err) {
+            setError('Failed to load data');
+            setLoading(false);
+        }
+    }, [token]);
 
-    const loadCategories = async (type) => {
+    const loadCategories = useCallback(async (type) => {
         try {
             const categoryType = type.includes('Inward') ? 'Inward' : 'Outward';
             const data = await api.getCategories(token, categoryType);
@@ -512,7 +465,17 @@ function TransactionForm({ token, user, onSuccess }) {
         } catch (err) {
             console.error('Failed to load categories');
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
+
+    useEffect(() => {
+        if (formData.transaction_type) {
+            loadCategories(formData.transaction_type);
+        }
+    }, [formData.transaction_type, loadCategories]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
