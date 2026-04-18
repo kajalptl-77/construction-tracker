@@ -119,7 +119,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Register (Admin only)
-app.post('/api/auth/register', authenticateToken, authorizeRole([101]), async (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
     try {
         const { name, email, mobile_no, password, role_code } = req.body;
 
