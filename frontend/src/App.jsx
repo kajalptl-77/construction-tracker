@@ -361,10 +361,12 @@ function Dashboard({ token, user }) {
     const loadSummary = useCallback(async () => {
         try {
             const data = await api.getDashboardSummary(token);
-            setSummary(data);
+            // Ensure data is an array
+            setSummary(Array.isArray(data) ? data : []);
             setLoading(false);
         } catch (err) {
             console.error('Failed to load summary');
+            setSummary([]); // Set to empty array on error
             setLoading(false);
         }
     }, [token]);
@@ -398,6 +400,8 @@ function Dashboard({ token, user }) {
 
             {loading ? (
                 <p>Loading data...</p>
+            ) : summary.length === 0 ? (
+                <p>No data available. Add transactions to see summary.</p>
             ) : (
                 <table className="data-table">
                     <thead>
