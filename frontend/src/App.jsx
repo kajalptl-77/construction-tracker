@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
 // API Helper
@@ -212,22 +213,33 @@ function UserManagement({ token, user }) {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    useEffect(() => {
-        loadUsers();
-    }, []);
+    // useEffect(() => {
+    //     loadUsers();
+    // }, []);
 
-    const loadUsers = async () => {
-        try {
-            const data = await api.getUsers(token);
-            // Filter to only show regular users (role_code 102)
-            const filteredUsers = data.filter(user => user.role_code === 102);
-            setUsers(filteredUsers);
-            setLoading(false);
-        } catch (err) {
-            setError('Failed to load users');
-            setLoading(false);
-        }
-    };
+    useEffect(() => {
+    loadUsers();
+}, [loadUsers]);
+
+    // const loadUsers = async () => {
+    //     try {
+    //         const data = await api.getUsers(token);
+    //         // Filter to only show regular users (role_code 102)
+    //         const filteredUsers = data.filter(user => user.role_code === 102);
+    //         setUsers(filteredUsers);
+    //         setLoading(false);
+    //     } catch (err) {
+    //         setError('Failed to load users');
+    //         setLoading(false);
+    //     }
+    // };
+
+    const loadUsers = useCallback(async () => {
+    const data = await api.getUsers(token);
+    const filteredUsers = data.filter(u => u.role_code === 102);
+    setUsers(filteredUsers);
+    setLoading(false);
+}, [token]);
 
     const handleAddUser = async (e) => {
         e.preventDefault();
@@ -358,20 +370,30 @@ function Dashboard({ token, user }) {
     const [summary, setSummary] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        loadSummary();
-    }, []);
+useEffect(() => {
+    loadSummary();
+}, [loadSummary]);
 
-    const loadSummary = async () => {
-        try {
-            const data = await api.getDashboardSummary(token);
-            setSummary(data);
-            setLoading(false);
-        } catch (err) {
-            console.error('Failed to load summary');
-            setLoading(false);
-        }
-    };
+    // const loadSummary = async () => {
+    //     try {
+    //         const data = await api.getDashboardSummary(token);
+    //         setSummary(data);
+    //         setLoading(false);
+    //     } catch (err) {
+    //         console.error('Failed to load summary');
+    //         setLoading(false);
+    //     }
+    // };
+
+    const loadSummary = useCallback(async () => {
+    try {
+        const data = await api.getDashboardSummary(token);
+        setSummary(data);
+        setLoading(false);
+    } catch (err) {
+        setLoading(false);
+    }
+}, [token]);
 
     const totalInward = summary.reduce((sum, s) => sum + parseFloat(s.total_inward || 0), 0);
     const totalOutward = summary.reduce((sum, s) => sum + parseFloat(s.total_outward || 0), 0);
@@ -446,26 +468,40 @@ function TransactionForm({ token, user, onSuccess }) {
         loadData();
     }, []);
 
-    useEffect(() => {
-        if (formData.transaction_type) {
-            loadCategories(formData.transaction_type);
-        }
-    }, [formData.transaction_type]);
+    // useEffect(() => {
+    //     if (formData.transaction_type) {
+    //         loadCategories(formData.transaction_type);
+    //     }
+    // }, [formData.transaction_type]);
 
-    const loadData = async () => {
-        try {
-            const [sitesData, txData] = await Promise.all([
-                api.getSites(token),
-                api.getTransactions(token)
-            ]);
-            setSites(sitesData);
-            setTransactions(txData);
-            setLoading(false);
-        } catch (err) {
-            setError('Failed to load data');
-            setLoading(false);
-        }
-    };
+    useEffect(() => {
+    loadData();
+}, [loadData]);
+
+    // const loadData = async () => {
+    //     try {
+    //         const [sitesData, txData] = await Promise.all([
+    //             api.getSites(token),
+    //             api.getTransactions(token)
+    //         ]);
+    //         setSites(sitesData);
+    //         setTransactions(txData);
+    //         setLoading(false);
+    //     } catch (err) {
+    //         setError('Failed to load data');
+    //         setLoading(false);
+    //     }
+    // };
+
+    const loadData = useCallback(async () => {
+    const [sitesData, txData] = await Promise.all([
+        api.getSites(token),
+        api.getTransactions(token)
+    ]);
+    setSites(sitesData);
+    setTransactions(txData);
+    setLoading(false);
+}, [token]);
 
     const loadCategories = async (type) => {
         try {
